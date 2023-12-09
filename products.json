@@ -1,0 +1,23 @@
+[
+    {
+        "id": 1,
+        "title": "Product1",
+        "description": "Lorem Ipsum1",
+        "code": "generated code1",
+        "price": 100,
+        "status": true,
+        "stock": 1,
+        "category": "Random1"
+    },
+    {
+        "id": 2,
+        "title": "Product2",
+        "description": "Lorem Ipsum2",
+        "code": "generated code2",
+        "price": 200,
+        "status": true,
+        "stock": 2,
+        "category": "Random2"
+    }
+
+]
