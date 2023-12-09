@@ -1,37 +1,30 @@
 import { Router } from "express";
+import fs from 'fs/promises';
 
 const cartRouter = Router();
-const carts = [
-    {
-        id: 1,
-        products: [
-            {
-                product: 1,
-                quantity: 5
-            },
-            {
-                product: 2,
-                quantity: 2
-            }
-        ]
-    },
-    {
-        id: 2,
-        products: [
-            {
-                product: 3,
-                quantity: 1
-            },
-            {
-                product: 9,
-                quantity: 1
-            }
-        ]
-    },
-];
+const CARTS_FILE = 'carts.json';
 
-cartRouter.get("/:id", (request, response) => {
+async function readCarts() {
+    try {
+        const data = await fs.readFile(CARTS_FILE, 'utf8');
+        return JSON.parse(data);
+    } catch (err) {
+        console.error('Error reading file:', err);
+        return [];
+    }
+}
+
+async function writeCarts(carts) {
+    try {
+        await fs.writeFile(CARTS_FILE, JSON.stringify(carts, null, 2), 'utf8');
+    } catch (err) {
+        console.error('Error writing file:', err);
+    }
+}
+
+cartRouter.get("/:id", async (request, response) => {
     const { id } = request.params;
+    const carts = await readCarts();
     const cart = carts.find(item => item.id === parseInt(id));
 
     if (!cart) {
@@ -41,20 +34,23 @@ cartRouter.get("/:id", (request, response) => {
     response.send(cart.products);
 });
 
-cartRouter.get("/", (request, response) => {
+cartRouter.get("/", async (request, response) => {
+    const carts = await readCarts();
     response.send(carts);
 });
 
-cartRouter.post("/", (request, response) => {
+cartRouter.post("/", async (request, response) => {
     const newCart = request.body;
+    const carts = await readCarts();
     const id = carts.length + 1;
     carts.push({ ...newCart, id });
+    await writeCarts(carts);
     response.send("Cart added.");
 });
 
-cartRouter.post("/:cartId/products/:productId", (request, response) => {
+cartRouter.post("/:cartId/products/:productId", async (request, response) => {
     const { cartId, productId } = request.params;
-
+    const carts = await readCarts();
     const requestedCart = carts.find(item => item.id === parseInt(cartId));
 
     if (!requestedCart) {
@@ -69,6 +65,7 @@ cartRouter.post("/:cartId/products/:productId", (request, response) => {
         requestedCart.products[productIndex].quantity++;
     }
 
+    await writeCarts(carts);
     response.send("Updated cart");
 });
 
