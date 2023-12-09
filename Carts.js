@@ -32,13 +32,13 @@ const carts = [
 
 cartRouter.get("/:id", (request, response) => {
     const { id } = request.params;
-    const element = carts.find(item => item.id === parseInt(id));
+    const cart = carts.find(item => item.id === parseInt(id));
 
-    if(!element){
-        return response.send("No cart of id " + id + " found");
+    if (!cart) {
+        return response.status(404).send("No cart of id " + id + " found");
     }
 
-    response.send(element.products);
+    response.send(cart.products);
 });
 
 cartRouter.get("/", (request, response) => {
@@ -46,33 +46,27 @@ cartRouter.get("/", (request, response) => {
 });
 
 cartRouter.post("/", (request, response) => {
-    const cart = request.body;
+    const newCart = request.body;
     const id = carts.length + 1;
-    carts.push({...cart, id});
+    carts.push({ ...newCart, id });
     response.send("Cart added.");
 });
 
 cartRouter.post("/:cartId/products/:productId", (request, response) => {
-    const {cartId, productId} = request.params;
+    const { cartId, productId } = request.params;
 
     const requestedCart = carts.find(item => item.id === parseInt(cartId));
 
-    if(!requestedCart){
-        return response.send("No cart of id " + cartId + " found");
+    if (!requestedCart) {
+        return response.status(404).send("No cart of id " + cartId + " found");
     }
 
-    if (requestedCart.products.some(item => item.product === parseInt(productId))) {
-        for (let i = 0; i < requestedCart.products.length; i++) {
-            const element = requestedCart.products[i];
+    const productIndex = requestedCart.products.findIndex(item => item.product === parseInt(productId));
 
-            if (element.product === parseInt(productId)){
-                element.quantity++;
-                break;
-            }
-        }
-    }
-    else{
-        requestedCart.products.push({product: parseInt(productId), quantity: 1});
+    if (productIndex === -1) {
+        requestedCart.products.push({ product: parseInt(productId), quantity: 1 });
+    } else {
+        requestedCart.products[productIndex].quantity++;
     }
 
     response.send("Updated cart");
